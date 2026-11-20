@@ -37,27 +37,28 @@ class ReservaError(SoftwareFJError):
     pass
 
 # CLASE CLIENTE (Encapsulación y Validaciones)
-
 class Cliente:
-    def __init__(self, nombre: str, identificacion: str, correo: str):
-        self.nombre = nombre
+    def __init__(self, identificacion: str, nombre: str, correo: str, telefono: str):
         self.__identificacion = identificacion  # Atributo privado (Encapsulación)
+        self.nombre = nombre
         self.__correo = correo                  # Atributo privado (Encapsulación)
+        self.__telefono = telefono              # Atributo privado (Encapsulación)
         self.validar_datos()
 
     def validar_datos(self):
         """Valida que los datos del cliente sean correctos."""
+        if not self.__identificacion or not self.__identificacion.isdigit() or len(self.__identificacion) < 5:
+            LoggerSistema.registrar("ERROR", f"Identificación inválida: {self.__identificacion}")
+            raise ClienteInvalidoError("La identificación debe contener solo números y tener al menos 5 dígitos.")
         if not self.nombre or len(self.nombre.strip()) < 3:
             LoggerSistema.registrar("ERROR", f"Intento de registro con nombre inválido: {self.nombre}")
             raise ClienteInvalidoError("El nombre del cliente es muy corto o está vacío.")
-        
-        if not self.__identificacion or not self.__identificacion.isdigit():
-            LoggerSistema.registrar("ERROR", f"Identificación inválida: {self.__identificacion}")
-            raise ClienteInvalidoError("La identificación debe contener solo números.")
-            
         if "@" not in self.__correo or "." not in self.__correo:
             LoggerSistema.registrar("ERROR", f"Correo electrónico inválido: {self.__correo}")
             raise ClienteInvalidoError("El formato del correo electrónico no es válido.")
+        if not self.__telefono or not self.__telefono.isdigit() or len(self.__telefono) < 7:
+            LoggerSistema.registrar("ERROR", f"Teléfono inválido: {self.__telefono}")
+            raise ClienteInvalidoError("El teléfono debe contener solo números (mínimo 7 dígitos).")
 
     # Getters para acceder a los atributos privados de forma segura
     @property
@@ -68,8 +69,13 @@ class Cliente:
     def correo(self):
         return self.__correo
 
+    @property
+    def telefono(self):
+        return self.__telefono
+
     def __str__(self):
-        return f"Cliente: {self.nombre} (ID: {self.__identificacion})"
+        return f"Cliente: {self.nombre} (ID: {self.__identificacion} | Tel: {self.__telefono})"
+
 # CLASE ABSTRACTA SERVICIO
 class Servicio(ABC):
     def __init__(self, codigo: str, nombre: str, tarifa_base: float, disponible: bool = True):
